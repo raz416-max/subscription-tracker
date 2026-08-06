@@ -47,19 +47,28 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log("Webhook received event type:", event.type);
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
         const userId = session.client_reference_id;
+        console.log("Checkout completed for userId:", userId, "customer:", session.customer);
 
-        await supabaseAdmin
+        const { error: upsertError } = await supabaseAdmin
           .from("profiles")
           .upsert({
             id: userId,
             stripe_customer_id: session.customer,
             subscription_status: "active",
           });
+
+        if (upsertError) {
+          console.error("Supabase upsert error:", upsertError);
+        } else {
+          console.log("Successfully marked user as active:", userId);
+        }
         break;
       }
 
