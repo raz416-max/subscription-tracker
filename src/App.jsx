@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
+import LandingPage from "./LandingPage";
 import Auth from "./Auth";
 import Paywall from "./Paywall";
 import SubscriptionTracker from "./SubscriptionTracker";
@@ -8,6 +9,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null); // null = not checked yet
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -54,6 +56,9 @@ export default function App() {
   }
 
   if (!session) {
+    if (!showAuth) {
+      return <LandingPage onGetStarted={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} />;
+    }
     return <Auth onAuthed={() => {}} />;
   }
 
@@ -65,7 +70,10 @@ export default function App() {
     );
   }
 
-  const onLogout = () => supabase.auth.signOut();
+  const onLogout = () => {
+    supabase.auth.signOut();
+    setShowAuth(false);
+  };
 
   if (subscriptionStatus !== "active") {
     return <Paywall user={session.user} onLogout={onLogout} />;
