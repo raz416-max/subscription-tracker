@@ -157,26 +157,48 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="max-w-sm mx-auto text-center border border-[#E7E4DC] rounded-2xl p-8 bg-white">
-          <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-2xl font-medium mb-1">
-            One plan. Everything included.
-          </h3>
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-4xl font-medium my-6">
-            £5.50<span className="text-base text-[#9A9F87] font-sans"> /month</span>
+        <h2 style={{ fontFamily: "'Fraunces', serif" }} className="text-3xl font-medium text-center mb-10">
+          Two plans, no surprises
+        </h2>
+        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div className="border border-[#E7E4DC] rounded-2xl p-7 bg-white text-center">
+            <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-xl font-medium mb-1">Basic</h3>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-3xl font-medium my-4">
+              £5.99<span className="text-base text-[#9A9F87] font-sans"> /month</span>
+            </div>
+            <ul className="text-sm text-[#5C6169] space-y-2 mb-7 text-left">
+              <li>— Unlimited subscriptions tracked</li>
+              <li>— Edit &amp; search your list</li>
+              <li>— Renewal alerts</li>
+            </ul>
+            <button
+              onClick={onGetStarted}
+              className="w-full bg-[#15181D] text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-[#0F8B5F] transition-colors"
+            >
+              Get started
+            </button>
           </div>
-          <ul className="text-sm text-[#5C6169] space-y-2 mb-8 text-left">
-            <li>— Unlimited subscriptions tracked</li>
-            <li>— Renewal alerts</li>
-            <li>— Monthly &amp; yearly totals</li>
-            <li>— Cancel anytime</li>
-          </ul>
-          <button
-            onClick={onGetStarted}
-            className="w-full bg-[#15181D] text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-[#0F8B5F] transition-colors"
-          >
-            Get started
-          </button>
+          <div className="border border-[#0F8B5F] ring-1 ring-[#0F8B5F] rounded-2xl p-7 bg-white text-center">
+            <div className="text-xs font-medium text-[#0F8B5F] uppercase tracking-wide mb-2">Most popular</div>
+            <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-xl font-medium mb-1">Premium</h3>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-3xl font-medium my-4">
+              £10.99<span className="text-base text-[#9A9F87] font-sans"> /month</span>
+            </div>
+            <ul className="text-sm text-[#5C6169] space-y-2 mb-7 text-left">
+              <li>— Everything in Basic</li>
+              <li>— Spending chart</li>
+              <li>— CSV export</li>
+              <li>— Email renewal reminders</li>
+            </ul>
+            <button
+              onClick={onGetStarted}
+              className="w-full bg-[#0F8B5F] text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-[#0C7350] transition-colors"
+            >
+              Get started
+            </button>
+          </div>
         </div>
+        <p className="text-center text-sm text-[#9A9F87] mt-6">Yearly billing available at checkout — save ~15%.</p>
       </section>
 
       <footer className="border-t border-[#E7E4DC] py-8">
