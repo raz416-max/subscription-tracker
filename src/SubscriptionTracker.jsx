@@ -1,15 +1,12 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Plus, Trash2, Calendar, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Calendar, AlertCircle, LogOut } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
-// Change these two lines to switch currency/locale (e.g. "en-GB" / "GBP" for UK).
-const LOCALE = "en-US";
-const CURRENCY_CODE = "USD";
+const LOCALE = "en-GB";
+const CURRENCY_CODE = "GBP";
 const currency = new Intl.NumberFormat(LOCALE, { style: "currency", currency: CURRENCY_CODE });
 
 function advanceIfPast(sub) {
-  // If a renewal date has passed, roll it forward to the next cycle
-  // (handles the case where the app wasn't opened on the exact renewal day).
   let next = new Date(sub.nextDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -24,11 +21,11 @@ function advanceIfPast(sub) {
 }
 
 const CATEGORY_COLORS = {
-  Streaming: "bg-purple-100 text-purple-700",
-  Software: "bg-blue-100 text-blue-700",
-  Fitness: "bg-green-100 text-green-700",
-  Music: "bg-pink-100 text-pink-700",
-  Other: "bg-gray-100 text-gray-700",
+  Streaming: "bg-[#F1E9F9] text-[#7A4FA3]",
+  Software: "bg-[#E6EEFB] text-[#3A6BC4]",
+  Fitness: "bg-[#E8F5EE] text-[#0F8B5F]",
+  Music: "bg-[#FBE9F0] text-[#B5457A]",
+  Other: "bg-[#F0EEE7] text-[#5C6169]",
 };
 
 const CATEGORIES = ["Streaming", "Software", "Fitness", "Music", "Other"];
@@ -48,6 +45,9 @@ function nextRenewalLabel(days) {
   return `in ${days}d`;
 }
 
+const fraunces = { fontFamily: "'Fraunces', serif" };
+const mono = { fontFamily: "'IBM Plex Mono', monospace" };
+
 export default function SubscriptionTracker({ user, onLogout }) {
   const [subs, setSubs] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -62,7 +62,6 @@ export default function SubscriptionTracker({ user, onLogout }) {
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // Load this user's subscriptions from Supabase on mount.
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
@@ -163,163 +162,182 @@ export default function SubscriptionTracker({ user, onLogout }) {
 
   if (!loaded) {
     return (
-      <div className="max-w-2xl mx-auto p-6 bg-white min-h-screen">
-        <p className="text-gray-400 text-sm">Loading your subscriptions…</p>
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center">
+        <p className="text-[#9A9F87] text-sm" style={mono}>Loading your subscriptions…</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white min-h-screen">
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Subscriptions</h1>
-          <p className="text-gray-500 text-sm mt-1">Track what you pay for, and never miss a renewal.</p>
-        </div>
-        <button onClick={onLogout} className="text-sm text-gray-400 hover:text-gray-700">
-          Log out
-        </button>
-      </div>
-
-      {/* Totals */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Monthly</div>
-          <div className="text-2xl font-semibold text-gray-900 mt-1">{currency.format(monthlyTotal)}</div>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Yearly</div>
-          <div className="text-2xl font-semibold text-gray-900 mt-1">{currency.format(yearlyTotal)}</div>
-        </div>
-      </div>
-
-      {/* Renewal alerts */}
-      {soon.length > 0 && (
-        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-center gap-2 text-amber-800 font-medium text-sm mb-2">
-            <AlertCircle size={16} />
-            Renewing soon
+    <div style={{ fontFamily: "'Inter', sans-serif" }} className="min-h-screen bg-[#FAFAF7] text-[#15181D]">
+      <header className="border-b border-[#E7E4DC] bg-white">
+        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div style={fraunces} className="text-lg font-medium">
+            Ledger<span className="text-[#0F8B5F]">.</span>
           </div>
-          <ul className="space-y-1">
-            {soon.map((s) => (
-              <li key={s.id} className="text-sm text-amber-800">
-                {s.name} — {currency.format(s.price)} ({nextRenewalLabel(s.days)})
-              </li>
-            ))}
-          </ul>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline text-xs text-[#9A9F87]" style={mono}>{user.email}</span>
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-1.5 text-sm text-[#9A9F87] hover:text-[#15181D] transition-colors"
+            >
+              <LogOut size={14} />
+              Log out
+            </button>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* List */}
-      <div className="space-y-2 mb-6">
-        {upcoming.map((s) => (
-          <div
-            key={s.id}
-            className="flex items-center justify-between border border-gray-200 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
+      <div className="max-w-2xl mx-auto px-6 py-10">
+        <div className="mb-8">
+          <div className="inline-block text-xs font-medium tracking-wide uppercase text-[#0F8B5F] bg-[#E8F5EE] px-3 py-1 rounded-full mb-3">
+            Member
+          </div>
+          <h1 style={fraunces} className="text-3xl font-medium">Your subscriptions</h1>
+          <p className="text-[#5C6169] text-sm mt-1">Everything you pay for, in one honest list.</p>
+        </div>
+
+        {/* Totals */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-5 border border-[#E7E4DC]">
+            <div className="text-xs text-[#9A9F87] uppercase tracking-wide mb-1">Monthly</div>
+            <div style={mono} className="text-3xl font-medium">{currency.format(monthlyTotal)}</div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-[#E7E4DC]">
+            <div className="text-xs text-[#9A9F87] uppercase tracking-wide mb-1">Yearly</div>
+            <div style={mono} className="text-3xl font-medium">{currency.format(yearlyTotal)}</div>
+          </div>
+        </div>
+
+        {/* Renewal alerts */}
+        {soon.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-[#F0DDB8] bg-[#FBF3E3] p-5">
+            <div className="flex items-center gap-2 text-[#8A6417] font-medium text-sm mb-3">
+              <AlertCircle size={16} />
+              Renewing soon
+            </div>
+            <ul className="space-y-1.5">
+              {soon.map((s) => (
+                <li key={s.id} className="text-sm text-[#8A6417] flex justify-between">
+                  <span>{s.name}</span>
+                  <span style={mono}>{currency.format(s.price)} · {nextRenewalLabel(s.days)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* List */}
+        <div className="space-y-2 mb-6">
+          {upcoming.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center justify-between bg-white border border-[#E7E4DC] rounded-2xl p-4 hover:border-[#0F8B5F] transition-colors"
+            >
               <div>
-                <div className="font-medium text-gray-900">{s.name}</div>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="font-medium">{s.name}</div>
+                <div className="flex items-center gap-2 mt-1.5">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${CATEGORY_COLORS[s.category] || CATEGORY_COLORS.Other}`}>
                     {s.category}
                   </span>
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <span className="text-xs text-[#9A9F87] flex items-center gap-1">
                     <Calendar size={12} />
                     {nextRenewalLabel(s.days)}
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="font-medium text-gray-900">{currency.format(s.price)}</div>
-                <div className="text-xs text-gray-400">{s.cycle}</div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div style={mono} className="font-medium">{currency.format(s.price)}</div>
+                  <div className="text-xs text-[#9A9F87]">{s.cycle}</div>
+                </div>
+                <button
+                  onClick={() => removeSub(s.id)}
+                  className="text-[#D8D5CB] hover:text-[#C0442A] transition-colors"
+                  aria-label={`Remove ${s.name}`}
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
-              <button
-                onClick={() => removeSub(s.id)}
-                className="text-gray-300 hover:text-red-500 transition-colors"
-                aria-label={`Remove ${s.name}`}
+            </div>
+          ))}
+          {subs.length === 0 && (
+            <div className="text-center text-[#9A9F87] text-sm py-10 bg-white rounded-2xl border border-dashed border-[#E7E4DC]">
+              No subscriptions yet. Add your first one below.
+            </div>
+          )}
+        </div>
+
+        {/* Add form */}
+        {!showForm ? (
+          <button
+            onClick={() => setShowForm(true)}
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-[#D8D5CB] rounded-2xl py-3.5 text-[#9A9F87] hover:border-[#0F8B5F] hover:text-[#0F8B5F] transition-colors"
+          >
+            <Plus size={16} />
+            Add subscription
+          </button>
+        ) : (
+          <form onSubmit={addSub} className="bg-white border border-[#E7E4DC] rounded-2xl p-5 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Name (e.g. Netflix)"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="border border-[#E7E4DC] rounded-lg px-3 py-2 text-sm col-span-2 focus:outline-none focus:border-[#0F8B5F]"
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Price"
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+                className="border border-[#E7E4DC] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0F8B5F]"
+              />
+              <select
+                value={form.cycle}
+                onChange={(e) => setForm({ ...form, cycle: e.target.value })}
+                className="border border-[#E7E4DC] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0F8B5F]"
               >
-                <Trash2 size={16} />
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <input
+                type="date"
+                value={form.nextDate}
+                onChange={(e) => setForm({ ...form, nextDate: e.target.value })}
+                className="border border-[#E7E4DC] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0F8B5F]"
+              />
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="border border-[#E7E4DC] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0F8B5F]"
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            {formError && <div className="text-sm text-[#C0442A]">{formError}</div>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="bg-[#15181D] text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-[#0F8B5F] transition-colors"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="text-[#9A9F87] text-sm font-medium rounded-lg px-4 py-2 hover:bg-[#F0EEE7] transition-colors"
+              >
+                Cancel
               </button>
             </div>
-          </div>
-        ))}
-        {subs.length === 0 && (
-          <div className="text-center text-gray-400 text-sm py-8">No subscriptions yet. Add your first one below.</div>
+          </form>
         )}
       </div>
-
-      {/* Add form */}
-      {!showForm ? (
-        <button
-          onClick={() => setShowForm(true)}
-          className="w-full flex items-center justify-center gap-2 border border-dashed border-gray-300 rounded-xl py-3 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
-        >
-          <Plus size={16} />
-          Add subscription
-        </button>
-      ) : (
-        <form onSubmit={addSub} className="border border-gray-200 rounded-xl p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="text"
-              placeholder="Name (e.g. Netflix)"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm col-span-2"
-            />
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Price"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            />
-            <select
-              value={form.cycle}
-              onChange={(e) => setForm({ ...form, cycle: e.target.value })}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <input
-              type="date"
-              value={form.nextDate}
-              onChange={(e) => setForm({ ...form, nextDate: e.target.value })}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            />
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          {formError && <div className="text-sm text-red-600">{formError}</div>}
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-gray-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-gray-800 transition-colors"
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              onClick={closeForm}
-              className="text-gray-500 text-sm font-medium rounded-lg px-4 py-2 hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
     </div>
   );
 }
