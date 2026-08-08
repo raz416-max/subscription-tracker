@@ -3,15 +3,20 @@ import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Server-side Supabase client using the SECRET key — this is what's allowed
-// to bypass row-level security and update any user's subscription status.
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Stripe requires the raw, unparsed request body to verify the webhook
-// signature, so we turn off Vercel's automatic body parsing for this route.
+const PREMIUM_PRICES = [
+  process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
+  process.env.STRIPE_PRICE_PREMIUM_YEARLY,
+];
+
+function planForPrice(priceId) {
+  return PREMIUM_PRICES.includes(priceId) ? "premium" : "basic";
+}
+
 export const config = {
   api: {
     bodyParser: false,
@@ -54,7 +59,13 @@ export default async function handler(req, res) {
       case "checkout.session.completed": {
         const session = event.data.object;
         const userId = session.client_reference_id;
-        console.log("Checkout completed for userId:", userId, "customer:", session.customer);
+
+        // Look up which price they actually bought, to know basic vs premium.
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        const priceId = lineItems.data[0]?.price?.id;
+        const plan = planForPrice(priceId);
+
+        console.log("Checkout completed for userId:", userId, "plan:", plan);
 
         const { error: upsertError } = await supabaseAdmin
           .from("profiles")
@@ -62,24 +73,36 @@ export default async function handler(req, res) {
             id: userId,
             stripe_customer_id: session.customer,
             subscription_status: "active",
+            plan,
           });
 
         if (upsertError) {
           console.error("Supabase upsert error:", upsertError);
         } else {
-          console.log("Successfully marked user as active:", userId);
+          console.log("Successfully marked user as active:", userId, plan);
         }
         break;
       }
 
-      case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const subscription = event.data.object;
         const status = subscription.status === "active" ? "active" : "inactive";
+        const priceId = subscription.items?.data?.[0]?.price?.id;
+        const plan = planForPrice(priceId);
 
         await supabaseAdmin
           .from("profiles")
-          .update({ subscription_status: status })
+          .update({ subscription_status: status, plan })
+          .eq("stripe_customer_id", subscription.customer);
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+
+        await supabaseAdmin
+          .from("profiles")
+          .update({ subscription_status: "inactive", plan: "none" })
           .eq("stripe_customer_id", subscription.customer);
         break;
       }
