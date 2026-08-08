@@ -8,7 +8,8 @@ import SubscriptionTracker from "./SubscriptionTracker";
 export default function App() {
   const [session, setSession] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [subscriptionStatus, setSubscriptionStatus] = useState(null); // null = not checked yet
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [plan, setPlan] = useState("none");
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
@@ -24,25 +25,27 @@ export default function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Once logged in, check whether this user has an active subscription.
   useEffect(() => {
     if (!session) {
       setSubscriptionStatus(null);
+      setPlan("none");
       return;
     }
 
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("subscription_status")
+        .select("subscription_status, plan")
         .eq("id", session.user.id)
         .maybeSingle();
 
       if (error) {
         console.error(error);
         setSubscriptionStatus("inactive");
+        setPlan("none");
       } else {
         setSubscriptionStatus(data?.subscription_status || "inactive");
+        setPlan(data?.plan || "none");
       }
     })();
   }, [session]);
@@ -79,5 +82,5 @@ export default function App() {
     return <Paywall user={session.user} onLogout={onLogout} />;
   }
 
-  return <SubscriptionTracker user={session.user} onLogout={onLogout} />;
+  return <SubscriptionTracker user={session.user} plan={plan} onLogout={onLogout} />;
 }

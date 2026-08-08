@@ -37,6 +37,9 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: 5,
+      },
       client_reference_id: userId,
       success_url: `${process.env.PUBLIC_URL}?checkout=success`,
       cancel_url: `${process.env.PUBLIC_URL}?checkout=cancelled`,

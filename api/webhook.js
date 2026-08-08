@@ -86,7 +86,7 @@ export default async function handler(req, res) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object;
-        const status = subscription.status === "active" ? "active" : "inactive";
+        const status = ["active", "trialing"].includes(subscription.status) ? "active" : "inactive";
         const priceId = subscription.items?.data?.[0]?.price?.id;
         const plan = planForPrice(priceId);
 

@@ -48,7 +48,9 @@ function nextRenewalLabel(days) {
 const fraunces = { fontFamily: "'Fraunces', serif" };
 const mono = { fontFamily: "'IBM Plex Mono', monospace" };
 
-export default function SubscriptionTracker({ user, onLogout }) {
+const BASIC_LIMIT = 5;
+
+export default function SubscriptionTracker({ user, plan, onLogout }) {
   const [subs, setSubs] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -96,6 +98,10 @@ export default function SubscriptionTracker({ user, onLogout }) {
     }
     if (Number(form.price) <= 0) {
       setFormError("Price must be greater than 0.");
+      return;
+    }
+    if (plan === "basic" && subs.length >= BASIC_LIMIT) {
+      setFormError(`Basic is limited to ${BASIC_LIMIT} subscriptions. Upgrade to Premium for unlimited tracking.`);
       return;
     }
     setFormError("");
@@ -269,14 +275,25 @@ export default function SubscriptionTracker({ user, onLogout }) {
         </div>
 
         {/* Add form */}
+        {plan === "basic" && (
+          <div className="text-xs text-[#9A9F87] mb-2 text-right" style={mono}>
+            {subs.length} / {BASIC_LIMIT} subscriptions
+          </div>
+        )}
         {!showForm ? (
-          <button
-            onClick={() => setShowForm(true)}
-            className="w-full flex items-center justify-center gap-2 border border-dashed border-[#D8D5CB] rounded-2xl py-3.5 text-[#9A9F87] hover:border-[#0F8B5F] hover:text-[#0F8B5F] transition-colors"
-          >
-            <Plus size={16} />
-            Add subscription
-          </button>
+          plan === "basic" && subs.length >= BASIC_LIMIT ? (
+            <div className="w-full text-center border border-dashed border-[#D8D5CB] rounded-2xl py-3.5 text-[#9A9F87] text-sm">
+              You've reached the Basic limit of {BASIC_LIMIT}. Upgrade to Premium for unlimited tracking.
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowForm(true)}
+              className="w-full flex items-center justify-center gap-2 border border-dashed border-[#D8D5CB] rounded-2xl py-3.5 text-[#9A9F87] hover:border-[#0F8B5F] hover:text-[#0F8B5F] transition-colors"
+            >
+              <Plus size={16} />
+              Add subscription
+            </button>
+          )
         ) : (
           <form onSubmit={addSub} className="bg-white border border-[#E7E4DC] rounded-2xl p-5 space-y-3">
             <div className="grid grid-cols-2 gap-3">
