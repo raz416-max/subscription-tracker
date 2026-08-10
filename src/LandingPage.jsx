@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Bell, PieChart, Wallet, ArrowRight } from "lucide-react";
 
 const TICKER_ITEMS = [
@@ -6,7 +6,23 @@ const TICKER_ITEMS = [
   "Amazon Prime", "YouTube Premium", "Notion", "PlayStation Plus", "Headspace", "ChatGPT Plus",
 ];
 
+const PLANS = {
+  basic: {
+    name: "Basic",
+    features: ["Unlimited subscriptions tracked", "Edit & search your list", "Renewal alerts"],
+    monthly: "£5.99",
+    yearly: "£60.99",
+  },
+  premium: {
+    name: "Premium",
+    features: ["Everything in Basic", "Spending chart", "CSV export", "Email renewal reminders"],
+    monthly: "£10.99",
+    yearly: "£120.99",
+  },
+};
+
 export default function LandingPage({ onGetStarted, onLogin }) {
+  const [billing, setBilling] = useState("monthly");
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }} className="bg-[#FAFAF7] text-[#15181D]">
       {/* Nav */}
@@ -157,48 +173,67 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <h2 style={{ fontFamily: "'Fraunces', serif" }} className="text-3xl font-medium text-center mb-10">
+        <h2 style={{ fontFamily: "'Fraunces', serif" }} className="text-3xl font-medium text-center mb-6">
           Two plans, no surprises
         </h2>
-        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-          <div className="border border-[#E7E4DC] rounded-2xl p-7 bg-white text-center">
-            <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-xl font-medium mb-1">Basic</h3>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-3xl font-medium my-4">
-              £5.99<span className="text-base text-[#9A9F87] font-sans"> /month</span>
-            </div>
-            <ul className="text-sm text-[#5C6169] space-y-2 mb-7 text-left">
-              <li>— Unlimited subscriptions tracked</li>
-              <li>— Edit &amp; search your list</li>
-              <li>— Renewal alerts</li>
-            </ul>
+
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex bg-white border border-[#E7E4DC] rounded-full p-1">
             <button
-              onClick={onGetStarted}
-              className="w-full bg-[#15181D] text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-[#0F8B5F] transition-colors"
+              onClick={() => setBilling("monthly")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                billing === "monthly" ? "bg-[#15181D] text-white" : "text-[#5C6169]"
+              }`}
             >
-              Get started
+              Monthly
             </button>
-          </div>
-          <div className="border border-[#0F8B5F] ring-1 ring-[#0F8B5F] rounded-2xl p-7 bg-white text-center">
-            <div className="text-xs font-medium text-[#0F8B5F] uppercase tracking-wide mb-2">Most popular</div>
-            <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-xl font-medium mb-1">Premium</h3>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-3xl font-medium my-4">
-              £10.99<span className="text-base text-[#9A9F87] font-sans"> /month</span>
-            </div>
-            <ul className="text-sm text-[#5C6169] space-y-2 mb-7 text-left">
-              <li>— Everything in Basic</li>
-              <li>— Spending chart</li>
-              <li>— CSV export</li>
-              <li>— Email renewal reminders</li>
-            </ul>
             <button
-              onClick={onGetStarted}
-              className="w-full bg-[#0F8B5F] text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-[#0C7350] transition-colors"
+              onClick={() => setBilling("yearly")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                billing === "yearly" ? "bg-[#15181D] text-white" : "text-[#5C6169]"
+              }`}
             >
-              Get started
+              Yearly — save ~15%
             </button>
           </div>
         </div>
-        <p className="text-center text-sm text-[#9A9F87] mt-6">Yearly billing available at checkout — save ~15%.</p>
+
+        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          {Object.entries(PLANS).map(([key, plan]) => {
+            const isPremium = key === "premium";
+            return (
+              <div
+                key={key}
+                className={`border rounded-2xl p-7 bg-white text-center ${
+                  isPremium ? "border-[#0F8B5F] ring-1 ring-[#0F8B5F]" : "border-[#E7E4DC]"
+                }`}
+              >
+                {isPremium && (
+                  <div className="text-xs font-medium text-[#0F8B5F] uppercase tracking-wide mb-2">Most popular</div>
+                )}
+                <h3 style={{ fontFamily: "'Fraunces', serif" }} className="text-xl font-medium mb-1">{plan.name}</h3>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace" }} className="text-3xl font-medium my-4">
+                  {plan[billing]}
+                  <span className="text-base text-[#9A9F87] font-sans"> /{billing === "monthly" ? "month" : "year"}</span>
+                </div>
+                <ul className="text-sm text-[#5C6169] space-y-2 mb-7 text-left">
+                  {plan.features.map((f) => (
+                    <li key={f}>— {f}</li>
+                  ))}
+                </ul>
+                <button
+                  onClick={onGetStarted}
+                  className={`w-full px-6 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isPremium ? "bg-[#0F8B5F] text-white hover:bg-[#0C7350]" : "bg-[#15181D] text-white hover:bg-[#0F8B5F]"
+                  }`}
+                >
+                  Get started
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-center text-sm text-[#9A9F87] mt-6">Every plan includes a 5-day free trial.</p>
       </section>
 
       <footer className="border-t border-[#E7E4DC] py-8">
