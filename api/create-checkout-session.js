@@ -16,13 +16,18 @@ export default async function handler(req, res) {
 
   const { userId, email, priceId } = req.body;
 
+  console.log("Checkout request received:", { userId, email, priceId });
+  console.log("Allowed prices:", ALLOWED_PRICES);
+
   if (!userId || !email || !priceId) {
+    console.error("Rejected: missing field(s)", { userId, email, priceId });
     return res.status(400).json({ error: "Missing userId, email, or priceId" });
   }
 
   // Only allow checkout for one of our known plan prices — never trust
   // an arbitrary price ID sent from the browser.
   if (!ALLOWED_PRICES.includes(priceId)) {
+    console.error("Rejected: priceId not in allowed list", priceId);
     return res.status(400).json({ error: "Invalid plan selected" });
   }
 
