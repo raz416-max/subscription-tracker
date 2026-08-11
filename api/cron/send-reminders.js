@@ -1,21 +1,19 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // service role: needed to read all users/subscriptions
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
-  // Only Vercel Cron (using our secret) should be able to trigger this
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // 1. Get all premium users and their reminder_days setting
   const { data: premiumProfiles, error: profileErr } = await supabase
     .from("profiles")
     .select("id, reminder_days")
@@ -34,7 +32,6 @@ export default async function handler(req, res) {
   let failed = 0;
 
   for (const profile of premiumProfiles) {
-    // 2. Find this user's subscriptions renewing exactly reminder_days from today
     const { data: subs, error: subsErr } = await supabase
       .from("subscriptions")
       .select("id, name, price, cycle, next_date")
@@ -46,3 +43,55 @@ export default async function handler(req, res) {
     }
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dueSubs = (subs ?? []).filter((sub) => {
+      const nextDate = new Date(sub.next_date);
+      nextDate.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((nextDate - today) / (1000 * 60 * 60 * 24));
+      return diffDays === profile.reminder_days;
+    });
+
+    if (dueSubs.length === 0) continue;
+
+    const { data: userData, error: userErr } = await supabase.auth.admin.getUserById(
+      profile.id
+    );
+
+    if (userErr || !userData?.user?.email) {
+      console.error(userErr);
+      failed++;
+      continue;
+    }
+
+    const email = userData.user.email;
+
+    for (const sub of dueSubs) {
+      try {
+        await resend.emails.send({
+          from: "reminders@getledgerpay.com",
+          to: email,
+          subject: `${sub.name} renews in ${profile.reminder_days} day${
+            profile.reminder_days === 1 ? "" : "s"
+          }`,
+          html: `
+            <p>Hi,</p>
+            <p><strong>${sub.name}</strong> (£${sub.price}/${sub.cycle}) renews on
+            <strong>${new Date(sub.next_date).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}</strong>.</p>
+            <p>Log in to Ledger if you'd like to cancel or make changes before then.</p>
+          `,
+        });
+        sent++;
+      } catch (err) {
+        console.error(err);
+        failed++;
+      }
+    }
+  }
+
+  return res.status(200).json({ sent, failed });
+}
