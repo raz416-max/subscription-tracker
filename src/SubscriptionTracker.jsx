@@ -2,6 +2,7 @@
 import { Plus, Trash2, Calendar, AlertCircle, LogOut, Pencil, X, Search, Download, BarChart3, Lock } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import ConnectBankButton from "./ConnectBankButton";
+import ReviewCandidatesModal from "./ReviewCandidatesModal";
 
 const LOCALE = "en-GB";
 const CURRENCY_CODE = "GBP";
@@ -83,6 +84,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
   const [subs, setSubs] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const isPremium = plan === "premium";
+  const [showReview, setShowReview] = useState(false);
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
@@ -307,7 +309,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
             {isPremium && (
               <ConnectBankButton
                 userId={user.id}
-                onSuccess={() => alert("Bank connected! (We will wire up transaction syncing next.)")}
+                onSuccess={() => setShowReview(true)}
               />
             )}
             {isPremium && subs.length > 0 && (
@@ -618,8 +620,20 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
           </form>
         ))}
       </div>
+
+      {showReview && (
+        <ReviewCandidatesModal
+          userId={user.id}
+          onClose={() => setShowReview(false)}
+          onConfirm={() => window.location.reload()}
+        />
+      )}
     </div>
   );
 }
+
+
+
+
 
 
