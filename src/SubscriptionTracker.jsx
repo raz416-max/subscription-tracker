@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+﻿import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Trash2, Calendar, AlertCircle, LogOut, Pencil, X, Search, Download, BarChart3, Lock } from "lucide-react";
 import { supabase } from "./supabaseClient";
+import ConnectBankButton from "./ConnectBankButton";
 
 const LOCALE = "en-GB";
 const CURRENCY_CODE = "GBP";
@@ -152,7 +153,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
       .single();
 
     if (error) {
-      setFormError("Couldn't save that — try again.");
+      setFormError("Couldn't save that â€” try again.");
       return;
     }
 
@@ -188,7 +189,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
       .eq("id", editingId);
 
     if (error) {
-      setFormError("Couldn't save changes — try again.");
+      setFormError("Couldn't save changes â€” try again.");
       return;
     }
 
@@ -264,7 +265,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
   if (!loaded) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center">
-        <p className="text-[#9A9F87] text-sm" style={mono}>Loading your subscriptions…</p>
+        <p className="text-[#9A9F87] text-sm" style={mono}>Loading your subscriptionsâ€¦</p>
       </div>
     );
   }
@@ -302,15 +303,23 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
             <h1 style={fraunces} className="text-3xl font-medium">Your subscriptions</h1>
             <p className="text-[#5C6169] text-sm mt-1">Everything you pay for, in one honest list.</p>
           </div>
-          {isPremium && subs.length > 0 && (
-            <button
-              onClick={() => downloadCSV(subs)}
-              className="flex items-center gap-1.5 text-sm text-[#5C6169] hover:text-[#0F8B5F] border border-[#E7E4DC] rounded-lg px-3 py-2 transition-colors"
-            >
-              <Download size={14} />
-              Export CSV
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isPremium && (
+              <ConnectBankButton
+                userId={user.id}
+                onSuccess={() => alert("Bank connected! (We will wire up transaction syncing next.)")}
+              />
+            )}
+            {isPremium && subs.length > 0 && (
+              <button
+                onClick={() => downloadCSV(subs)}
+                className="flex items-center gap-1.5 text-sm text-[#5C6169] hover:text-[#0F8B5F] border border-[#E7E4DC] rounded-lg px-3 py-2 transition-colors"
+              >
+                <Download size={14} />
+                Export CSV
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Totals */}
@@ -325,7 +334,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
           </div>
         </div>
 
-        {/* Spending by category — Premium feature */}
+        {/* Spending by category â€” Premium feature */}
         {subs.length > 0 && (
           <div className="bg-white rounded-2xl p-5 border border-[#E7E4DC] mb-6">
             <div className="flex items-center gap-2 text-sm font-medium mb-4">
@@ -352,7 +361,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
               </div>
             ) : (
               <div className="text-sm text-[#9A9F87]">
-                See exactly where your money goes each month — available on Premium.
+                See exactly where your money goes each month â€” available on Premium.
               </div>
             )}
           </div>
@@ -369,7 +378,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
               {soon.map((s) => (
                 <li key={s.id} className="text-sm text-[#8A6417] flex justify-between">
                   <span>{s.name}</span>
-                  <span style={mono}>{currency.format(s.price)} · {nextRenewalLabel(s.days)}</span>
+                  <span style={mono}>{currency.format(s.price)} Â· {nextRenewalLabel(s.days)}</span>
                 </li>
               ))}
             </ul>
@@ -383,7 +392,7 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9A9F87]" />
               <input
                 type="text"
-                placeholder="Search subscriptions…"
+                placeholder="Search subscriptionsâ€¦"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full border border-[#E7E4DC] rounded-lg pl-9 pr-3 py-2 text-sm bg-white focus:outline-none focus:border-[#0F8B5F]"
@@ -612,3 +621,5 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
     </div>
   );
 }
+
+
