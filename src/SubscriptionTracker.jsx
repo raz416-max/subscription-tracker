@@ -40,6 +40,17 @@ const CATEGORY_BAR_COLORS = {
 
 const CATEGORIES = ["Streaming", "Software", "Fitness", "Music", "Other"];
 
+const SUGGESTED_SUBS = [
+  { name: "Netflix", price: 15.99, category: "Streaming" },
+  { name: "Spotify", price: 11.99, category: "Music" },
+  { name: "Disney+", price: 7.99, category: "Streaming" },
+  { name: "Amazon Prime", price: 8.99, category: "Other" },
+  { name: "YouTube Premium", price: 12.99, category: "Streaming" },
+  { name: "Notion", price: 8, category: "Software" },
+  { name: "Headspace", price: 9.99, category: "Fitness" },
+  { name: "ChatGPT Plus", price: 20, category: "Software" },
+];
+
 function daysUntil(dateStr) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -229,6 +240,43 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
     setSubs((prev) => prev.filter((s) => s.id !== id));
     const { error } = await supabase.from("subscriptions").delete().eq("id", id);
     if (error) console.error(error);
+  }
+
+  async function quickAdd(sub) {
+    if (plan === "basic" && subs.length >= BASIC_LIMIT) return;
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + 30);
+    const nextDateStr = nextDate.toISOString().slice(0, 10);
+
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .insert({
+        user_id: user.id,
+        name: sub.name,
+        price: sub.price,
+        cycle: "monthly",
+        next_date: nextDateStr,
+        category: sub.category,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSubs((prev) => [
+      ...prev,
+      {
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        cycle: data.cycle,
+        nextDate: data.next_date,
+        category: data.category,
+      },
+    ]);
   }
 
   const monthlyTotal = useMemo(() => {
@@ -460,8 +508,19 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
             </div>
           ))}
           {subs.length === 0 && (
-            <div className="text-center text-[#9A9F87] text-sm py-10 bg-white rounded-2xl border border-dashed border-[#E7E4DC]">
-              No subscriptions yet. Add your first one below.
+            <div className="text-center bg-white rounded-2xl border border-dashed border-[#E7E4DC] p-6">
+              <p className="text-[#9A9F87] text-sm mb-4">No subscriptions yet. Add one below, or quick-add a popular one:</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {SUGGESTED_SUBS.map((s) => (
+                  <button
+                    key={s.name}
+                    onClick={() => quickAdd(s)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-[#E7E4DC] text-[#5C6169] hover:border-[#0F8B5F] hover:text-[#0F8B5F] transition-colors"
+                  >
+                    + {s.name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           {subs.length > 0 && visible.length === 0 && (
@@ -631,6 +690,9 @@ export default function SubscriptionTracker({ user, plan, onLogout }) {
     </div>
   );
 }
+
+
+
 
 
 
