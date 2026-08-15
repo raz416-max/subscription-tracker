@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Bell, PieChart, Wallet, ArrowRight } from "lucide-react";
 
 const TICKER_ITEMS = [
@@ -62,7 +62,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               onClick={onGetStarted}
               className="group inline-flex items-center gap-2 bg-[#15181D] text-white px-6 py-3.5 rounded-lg text-sm font-medium hover:bg-[#0F8B5F] transition-colors"
             >
-              Get started — £5.50/month
+              Get started — £5.99/month
               <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -244,3 +244,4 @@ export default function LandingPage({ onGetStarted, onLogin }) {
     </div>
   );
 }
+
