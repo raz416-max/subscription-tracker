@@ -171,6 +171,19 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </div>
       </section>
 
+      {/* Founder note */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="w-12 h-12 rounded-full bg-[#E8F5EE] text-[#0F8B5F] flex items-center justify-center mx-auto mb-5 font-medium" style={{ fontFamily: "'Fraunces', serif" }}>
+            A
+          </div>
+          <p className="text-lg text-[#5C6169] leading-relaxed italic mb-4">
+            "I kept getting hit by renewals I'd forgotten about, like a gym membership I hadn't used in months, or a streaming service I meant to cancel ages ago. I built Ledger because I wanted one honest place to see everything I was paying for, with enough warning to actually do something before it renewed."
+          </p>
+          <div className="text-sm text-[#9A9F87]">Abdullah, builder of Ledger</div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <h2 style={{ fontFamily: "'Fraunces', serif" }} className="text-3xl font-medium text-center mb-6">
@@ -244,4 +257,5 @@ export default function LandingPage({ onGetStarted, onLogin }) {
     </div>
   );
 }
+
 
